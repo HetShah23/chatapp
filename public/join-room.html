@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css"
+			integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk="
+			crossorigin="anonymous"
+		/>
+		<link rel="stylesheet" href="css/style.css" />
+		<title>ChatApp</title>
+	</head>
+	<body>
+		<div class="join-container">
+			<header class="join-header">
+				<h1><i class="fas fa-smile"></i> ChatApp</h1>
+			</header>
+			<main class="join-main">
+				<form action="chat.html">
+					<div class="form-control">
+						<label for="username">Username</label>
+						<input
+							type="text"
+							name="username"
+							id="username"
+							placeholder="Enter Username"
+							required
+						/>
+					</div>
+					<div class="form-control">
+						<label for="username">Join Room</label>
+						<input
+							type="text"
+							name="room"
+							id="room"
+							placeholder="Enter Room Name"
+							required
+						/>
+					</div>
+					<button type="submit" class="btn">Join Room</button>
+				</form>
+			</main>
+
+			<!-- <main class="join-main">
+				<form id="new-room-form">
+					<div class="form-control">
+						<label for="newRoomName">Create New Room</label>
+						<input
+							type="text"
+							name="newRoomName"
+							id="newRoomName"
+							placeholder="Enter Room Name"
+							required
+						/>
+					</div>
+					<button class="btn">Create</button>
+				</form>
+			</main> -->
+
+			<main class="join-main">
+				<form action="dm.html">
+					<div class="form-control">
+						<label for="username">Username</label>
+						<input
+							type="text"
+							name="username"
+							id="username2"
+							placeholder="Enter Username"
+							required
+						/>
+					</div>
+					<div class="form-control">
+						<label for="friends">Friends List</label>
+						<select name="friends" id="friends"></select>
+					</div>
+					<button type="submit" class="btn">Start Chatting</button>
+				</form>
+			</main>
+		</div>
+
+		<script
+    		src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.2/qs.min.js"
+    		integrity="sha256-TDxXjkAUay70ae/QJBEpGKkpVslXaHHayklIVglFRT4="
+    		crossorigin="anonymous"
+    	></script>
+		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script>
+			// Get username and room from URL
+			const { username } = Qs.parse(location.search, {
+				ignoreQueryPrefix: true,
+			})
+
+			// Get HTML Elements
+			const usernameForm = document.getElementById("username")
+			const usernameForm2 = document.getElementById("username2")
+			const friendList = document.getElementById("friends")
+			const newFriend = document.getElementById("new-friend")
+
+			usernameForm.value = username
+			usernameForm.readOnly = true
+			usernameForm2.value = username
+			usernameForm2.readOnly = true
+
+			var friendSelected
+
+			// On selecting friend from friends list
+			friendList.addEventListener('change', () =>{
+				friendSelected = friendList.value
+
+				if(friendSelected !== 'new') {
+					newFriend.value = friendSelected
+					newFriend.readOnly = true
+				} else {
+					newFriend.value = ''
+					newFriend.readOnly = false
+				}
+			})
+
+			// socket connection
+			const socket = io()
+
+			// sending username in backend
+			socket.emit('loggedInUsername', username)
+
+			// fetching friends list
+			socket.on('friendsList', friendsList => {
+				outputFriends(friendsList)
+			})
+
+			// to display friends in UI
+			function outputFriends(friends) {
+				friendList.innerHTML = ''
+
+				friends.forEach((user) => {
+					if(user.username !== username){
+						const option = document.createElement('option')
+				  		option.innerText = user.username
+				  		option.value = user.username
+				  		friendList.appendChild(option)
+					}
+				})
+			}
+
+			//const newRoomForm = document.getElementById("new-room-form")
+			//// Message submit
+			//newRoomForm.addEventListener('submit', (e) => {
+			//	e.preventDefault()
+			//
+			//	// Get message text
+			//	let newRoomName = e.target.elements.newRoomName.value
+			//
+			//	if (!newRoomName) {
+			//	  return false
+			//	}
+			//
+			//	// Emit message to server
+			//	socket.emit('createNewRoom', newRoomName)
+			//
+			//	// Clear input
+			//	e.target.elements.newRoomName.value = ''
+			//})
+
+		</script>
+	</body>
+</html>
